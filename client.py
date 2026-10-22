@@ -18,11 +18,11 @@ _cached_m2m: tuple[str, float] | None = None
 
 
 async def _client_credentials_token() -> str:
-    """Cognito app identity token (client credentials), cached until just before it expires.
+    """App identity token (client credentials grant), cached until just before it expires.
 
     A form-encoded POST to the configured token URL with HTTP Basic auth. No
-    `audience`/`scope` params: a client_credentials grant issues the scopes fixed
-    on the app client and Cognito's token endpoint rejects them.
+    `audience`/`scope` params: the grant issues the scopes fixed on the app, and the
+    token endpoint rejects them. Grant shape unchanged from the original Cognito issuer.
     """
     global _cached_m2m
     if _cached_m2m and time.monotonic() < _cached_m2m[1]:

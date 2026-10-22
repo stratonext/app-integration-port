@@ -41,17 +41,22 @@ container on its first run.
 
 ### 2. Enable the integration in StratoNext
 
-Integrations in StratoNext are enabled per workspace, and the container syncs exactly the
-workspaces that enabled Port. Visibility is enablement: the app identity can see a
-workspace only while Port is enabled there.
+Port is enabled once for the organization and switched on per workspace. The container syncs
+exactly the workspaces where Port is switched on: the app identity can see a workspace only
+while Port is enabled there.
 
-1. An organization admin creates the **Port** app identity once, at organization level. It yields the three
-   `STRATONEXT_AUTH_*` values used in step 3: token URL, client ID, client secret.
-2. Each workspace admin enables **Port** under their workspace's integrations.
+1. An organization admin opens **Admin → Apps** and switches **Port** on. The first enable
+   generates Port's credential and shows it **once**: a client ID and a client secret. Copy
+   both into `.env` (step 3) before closing the dialog. A lost secret cannot be recovered,
+   only rotated from the same page. The token URL is the StratoNext API origin plus
+   `/oauth2/agent-token`.
+2. A workspace admin switches **Port** on under the workspace's **Settings → Apps**.
 
-A workspace enabled later is picked up on the next resync (every 60 minutes by default) or
-on restart. Disabling Port in a workspace removes that workspace's entities from Port on the
-next resync. The container logs, at startup, which workspaces it can see.
+Nothing is visible to Port until at least one workspace has it on. A workspace switched on
+later is picked up on the next resync (every 60 minutes by default) or on restart. Switching
+Port off in a workspace removes that workspace's entities from Port on the next resync;
+switching it off for the organization stops the integration everywhere but keeps the
+workspace settings. The container logs, at startup, which workspaces it can see.
 
 ### 3. Run the container
 
@@ -78,9 +83,9 @@ Everything is set in `.env`. Required:
 | `OCEAN__PORT__CLIENT_ID` / `OCEAN__PORT__CLIENT_SECRET` | From step 1 |
 | `OCEAN__PORT__BASE_URL` | From step 1: `https://api.port.io` (EU) or `https://api.us.port.io` (US) |
 | `OCEAN__INTEGRATION__CONFIG__STRATONEXT_API_URL` | StratoNext GraphQL endpoint, e.g. `https://api.prod.stratonext.com/v1/graphql` |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_TOKEN_URL` | Token URL of the app identity from step 2, e.g. `https://api.prod.stratonext.com/oauth2/agent-token` |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_ID` | Client ID of the app identity |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_SECRET` | Client secret of the app identity |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_TOKEN_URL` | Token URL from step 2, e.g. `https://api.prod.stratonext.com/oauth2/agent-token` |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_ID` | Client ID shown when Port was enabled (step 2) |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_SECRET` | Client secret shown when Port was enabled (step 2) |
 | `OCEAN__INTEGRATION__CONFIG__PORT_WEBHOOK_SECRET` | A secret **you choose** (e.g. `openssl rand -hex 32`): nobody issues it. The container checks it on every webhook dispatch call, and you paste the same value into Port in step 5. **Unset, every webhook request is refused.** Not needed for the native actions. |
 
 Optional:
