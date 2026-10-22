@@ -1,0 +1,27 @@
+extends: default
+
+yaml-files:
+  - '**/*.yaml'
+  - '**/*.yml'
+  - '**/*.json'
+
+ignore: |
+  **/node_modules/**
+  dist/**
+  .gitignore
+  .yamlignore
+  **/{{cookiecutter.integration_slug}}/**
+  **/.mypy_cache/**
+  **/.venv/**
+  docs/**
+  deployment/**
+
+rules:
+  # ignore line length
+  line-length: disable
+
+  # ignore truthy checks
+  truthy: disable
+
+  # ignore document start marker
+  document-start: disable

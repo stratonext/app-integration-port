@@ -1,0 +1,377 @@
+[
+  {
+    "identifier": "stratonextWorkspace",
+    "title": "StratoNext Workspace",
+    "description": "A StratoNext workspace: the unit an organization is divided into. Everything else belongs to one.",
+    "icon": "Package",
+    "schema": {
+      "properties": {
+        "organizationId": {
+          "title": "Organization ID",
+          "type": "string"
+        },
+        "createdAt": {
+          "title": "Created At",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": []
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "relations": {}
+  },
+  {
+    "identifier": "stratonextEnvironment",
+    "title": "StratoNext Environment",
+    "description": "A StratoNext environment: a cloud account/region an agent can operate in",
+    "icon": "Environment",
+    "schema": {
+      "properties": {
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "classification": {
+          "title": "Classification",
+          "type": "string"
+        },
+        "autoApproveUpTo": {
+          "title": "Auto-approve Up To",
+          "type": "string"
+        },
+        "allowAgentsToBeDeployed": {
+          "title": "Allows Agent Deployment",
+          "type": "boolean"
+        },
+        "allowAgentsToAccess": {
+          "title": "Allows Agent Access",
+          "type": "boolean"
+        },
+        "createdAt": {
+          "title": "Created At",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": []
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "relations": {
+      "workspace": {
+        "title": "Workspace",
+        "target": "stratonextWorkspace",
+        "required": false,
+        "many": false
+      }
+    }
+  },
+  {
+    "identifier": "stratonextAgent",
+    "title": "StratoNext Agent",
+    "description": "A StratoNext agent: an AI operator registered in a workspace",
+    "icon": "Users",
+    "schema": {
+      "properties": {
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "health": {
+          "title": "Health",
+          "type": "string"
+        },
+        "endpointUrl": {
+          "title": "Endpoint URL",
+          "type": "string",
+          "format": "url"
+        },
+        "createdAt": {
+          "title": "Created At",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": []
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "relations": {
+      "workspace": {
+        "title": "Workspace",
+        "target": "stratonextWorkspace",
+        "required": false,
+        "many": false
+      },
+      "environment": {
+        "title": "Environment",
+        "target": "stratonextEnvironment",
+        "required": false,
+        "many": false
+      }
+    }
+  },
+  {
+    "identifier": "stratonextProject",
+    "title": "StratoNext Project",
+    "description": "A StratoNext project: a unit of work agents and humans collaborate on",
+    "icon": "Package",
+    "schema": {
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "projectType": {
+          "title": "Type",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "createdAt": {
+          "title": "Created At",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": []
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "relations": {
+      "workspace": {
+        "title": "Workspace",
+        "target": "stratonextWorkspace",
+        "required": false,
+        "many": false
+      }
+    }
+  },
+  {
+    "identifier": "stratonextTask",
+    "title": "StratoNext Task",
+    "description": "A StratoNext task: a unit of work assigned to an agent or a human",
+    "icon": "Clock",
+    "schema": {
+      "properties": {
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "assigneeType": {
+          "title": "Assignee Type",
+          "type": "string"
+        },
+        "verificationStatus": {
+          "title": "Verification Status",
+          "type": "string"
+        },
+        "verificationCriteria": {
+          "title": "Verification Criteria",
+          "type": "string"
+        },
+        "verificationNotes": {
+          "title": "Verification Notes",
+          "type": "string"
+        },
+        "createdAt": {
+          "title": "Created At",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": []
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "relations": {
+      "workspace": {
+        "title": "Workspace",
+        "target": "stratonextWorkspace",
+        "required": false,
+        "many": false
+      },
+      "project": {
+        "title": "Project",
+        "target": "stratonextProject",
+        "required": false,
+        "many": false
+      },
+      "agent": {
+        "title": "Assigned Agent",
+        "target": "stratonextAgent",
+        "required": false,
+        "many": false
+      }
+    }
+  },
+  {
+    "identifier": "stratonextScheduledJob",
+    "title": "StratoNext Scheduled Job",
+    "description": "A StratoNext scheduled job: a recurring task an agent runs on a cron schedule",
+    "icon": "Clock",
+    "schema": {
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "schedule": {
+          "title": "Schedule",
+          "type": "string"
+        },
+        "timezone": {
+          "title": "Timezone",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "instructions": {
+          "title": "Instructions",
+          "type": "string"
+        },
+        "environmentIds": {
+          "title": "Environment IDs",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deploymentIds": {
+          "title": "Deployment IDs",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lastFiredAt": {
+          "title": "Last Fired At",
+          "type": "string",
+          "format": "date-time"
+        },
+        "nextFireAt": {
+          "title": "Next Fire At",
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "title": "Created At",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": []
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "relations": {
+      "workspace": {
+        "title": "Workspace",
+        "target": "stratonextWorkspace",
+        "required": false,
+        "many": false
+      },
+      "project": {
+        "title": "Project",
+        "target": "stratonextProject",
+        "required": false,
+        "many": false
+      },
+      "agent": {
+        "title": "Assigned Agent",
+        "target": "stratonextAgent",
+        "required": false,
+        "many": false
+      }
+    }
+  },
+  {
+    "identifier": "stratonextReport",
+    "title": "StratoNext Report",
+    "description": "A StratoNext report: an incident, investigation or generic write-up produced against projects",
+    "icon": "Book",
+    "schema": {
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string",
+          "enum": [
+            "INCIDENT",
+            "INVESTIGATION",
+            "GENERIC"
+          ]
+        },
+        "status": {
+          "title": "Status",
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "SEALED"
+          ]
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "body": {
+          "title": "Body",
+          "type": "string",
+          "format": "markdown"
+        },
+        "createdBy": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "createdAt": {
+          "title": "Created At",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "title": "Updated At",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": []
+    },
+    "mirrorProperties": {},
+    "calculationProperties": {},
+    "relations": {
+      "workspace": {
+        "title": "Workspace",
+        "target": "stratonextWorkspace",
+        "required": false,
+        "many": false
+      },
+      "projects": {
+        "title": "Projects",
+        "target": "stratonextProject",
+        "required": false,
+        "many": true
+      }
+    }
+  }
+]

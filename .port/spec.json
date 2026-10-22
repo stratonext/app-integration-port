@@ -1,0 +1,231 @@
+{
+  "title": "StratoNext",
+  "description": "Exports a StratoNext organization (workspaces, environments, agents, projects, tasks, scheduled jobs and reports) into Port, and lets Port workflows dispatch StratoNext tasks",
+  "icon": "Package",
+  "features": [
+    {
+      "type": "exporter",
+      "section": "AI Agents",
+      "resources": [
+        {
+          "kind": "workspace"
+        },
+        {
+          "kind": "environment"
+        },
+        {
+          "kind": "agent"
+        },
+        {
+          "kind": "project"
+        },
+        {
+          "kind": "task"
+        },
+        {
+          "kind": "scheduledJob"
+        },
+        {
+          "kind": "report"
+        }
+      ]
+    }
+  ],
+  "saas": {
+    "enabled": false
+  },
+  "configurations": [
+    {
+      "name": "stratonextApiUrl",
+      "type": "url",
+      "required": true,
+      "description": "StratoNext GraphQL endpoint, e.g. https://api.prod.stratonext.com/v1/graphql"
+    },
+    {
+      "name": "stratonextAuthDomain",
+      "type": "string",
+      "required": true,
+      "description": "Auth domain of the StratoNext machine identity, e.g. api.prod.stratonext.com/oauth2/agent-token"
+    },
+    {
+      "name": "stratonextAuthClientId",
+      "type": "string",
+      "required": true,
+      "sensitive": true,
+      "description": "Client id of the StratoNext machine identity"
+    },
+    {
+      "name": "stratonextAuthClientSecret",
+      "type": "string",
+      "required": true,
+      "sensitive": true,
+      "description": "Client secret of the StratoNext machine identity"
+    },
+    {
+      "name": "portWebhookSecret",
+      "type": "string",
+      "required": false,
+      "sensitive": true,
+      "description": "Shared secret Port workflow WEBHOOK nodes must send as the X-StratoNext-Secret header. Only needed for the /integration/tasks/* webhook fallback; the native actions below do not use it."
+    }
+  ],
+  "actionsProcessingEnabled": true,
+  "actions": [
+    {
+      "name": "create_task",
+      "icon": "Package",
+      "description": "Create a StratoNext task without dispatching it",
+      "inputs": [
+        {
+          "name": "name",
+          "title": "Task name",
+          "type": "string",
+          "description": "Short name for the task",
+          "required": true
+        },
+        {
+          "name": "description",
+          "title": "Description",
+          "type": "string",
+          "description": "What the agent should achieve",
+          "required": true
+        },
+        {
+          "name": "instructions",
+          "title": "Instructions",
+          "type": "string",
+          "description": "Optional step-by-step instructions for the agent"
+        },
+        {
+          "name": "workspaceId",
+          "title": "Workspace ID",
+          "type": "string",
+          "description": "StratoNext workspace to create the task in (a stratonextWorkspace identifier). Optional when projectId is given: the project's workspace is used."
+        },
+        {
+          "name": "projectId",
+          "title": "Project ID",
+          "type": "string",
+          "description": "StratoNext project to file the task under (a stratonextProject identifier)"
+        },
+        {
+          "name": "assigneeId",
+          "title": "Assignee ID",
+          "type": "string",
+          "description": "StratoNext agent to assign the task to (a stratonextAgent identifier)"
+        },
+        {
+          "name": "environmentId",
+          "title": "Environment ID",
+          "type": "string",
+          "description": "Target environment (a stratonextEnvironment identifier). Use when the work is not tied to a project deployment."
+        },
+        {
+          "name": "deploymentId",
+          "title": "Deployment ID",
+          "type": "string",
+          "description": "Target deployment. Preferred for project work: the agent resolves the environment, stack and region from it."
+        },
+        {
+          "name": "verificationCriteria",
+          "title": "Verification criteria",
+          "type": "string",
+          "description": "How StratoNext should verify the task is done"
+        },
+        {
+          "name": "idempotencyKey",
+          "title": "Idempotency key",
+          "type": "string",
+          "description": "Optional. Defaults to the run id, so a Port retry returns the original task instead of a duplicate."
+        }
+      ]
+    },
+    {
+      "name": "dispatch_task",
+      "icon": "Package",
+      "description": "Dispatch a StratoNext task to an agent. Pass taskId for an existing task, or the create_task inputs to create and dispatch in one step.",
+      "inputs": [
+        {
+          "name": "taskId",
+          "title": "Task ID",
+          "type": "string",
+          "description": "Existing task to dispatch. Leave empty to create one from the inputs below."
+        },
+        {
+          "name": "name",
+          "title": "Task name",
+          "type": "string",
+          "description": "Required when taskId is empty"
+        },
+        {
+          "name": "description",
+          "title": "Description",
+          "type": "string",
+          "description": "Required when taskId is empty"
+        },
+        {
+          "name": "instructions",
+          "title": "Instructions",
+          "type": "string",
+          "description": "Optional step-by-step instructions for the agent"
+        },
+        {
+          "name": "workspaceId",
+          "title": "Workspace ID",
+          "type": "string",
+          "description": "StratoNext workspace to create the task in (a stratonextWorkspace identifier). Optional when projectId is given: the project's workspace is used."
+        },
+        {
+          "name": "projectId",
+          "title": "Project ID",
+          "type": "string",
+          "description": "StratoNext project to file the task under"
+        },
+        {
+          "name": "assigneeId",
+          "title": "Assignee ID",
+          "type": "string",
+          "description": "StratoNext agent to assign the task to"
+        },
+        {
+          "name": "environmentId",
+          "title": "Environment ID",
+          "type": "string",
+          "description": "Target environment"
+        },
+        {
+          "name": "deploymentId",
+          "title": "Deployment ID",
+          "type": "string",
+          "description": "Target deployment, preferred for project work"
+        },
+        {
+          "name": "verificationCriteria",
+          "title": "Verification criteria",
+          "type": "string",
+          "description": "How StratoNext should verify the task is done"
+        },
+        {
+          "name": "idempotencyKey",
+          "title": "Idempotency key",
+          "type": "string",
+          "description": "Optional. Defaults to the run id."
+        }
+      ]
+    },
+    {
+      "name": "cancel_task",
+      "icon": "Package",
+      "description": "Cancel a queued or running StratoNext task",
+      "inputs": [
+        {
+          "name": "taskId",
+          "title": "Task ID",
+          "type": "string",
+          "description": "The task to cancel (a stratonextTask identifier)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

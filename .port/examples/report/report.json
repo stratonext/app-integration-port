@@ -1,0 +1,12 @@
+{
+  "id": "rpt_4t7u1v4w8x2y5z9a",
+  "title": "Incident: payments-api 5xx spike 2026-10-20",
+  "type": "INCIDENT",
+  "status": "SEALED",
+  "summary": "A config change in the 14:00 deploy exhausted the Lambda connection pool. Rolled back at 14:41.",
+  "body": null,
+  "createdBy": "agt_7h2k9m4n1p6q3r8s",
+  "projectIds": ["prj_5m8n2p7q1r4s9t3u"],
+  "createdAt": "2026-10-20T15:10:00Z",
+  "updatedAt": "2026-10-20T16:02:00Z"
+}

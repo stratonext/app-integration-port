@@ -1,0 +1,16 @@
+{
+  "id": "job_2r5s8t1u4v7w3x6y",
+  "name": "Nightly AWS cost report",
+  "description": "Read-only Cost Explorer summary for prod-eu-west-1, compared to the previous day.",
+  "schedule": "0 6 * * *",
+  "timezone": "Europe/Rome",
+  "status": "ACTIVE",
+  "instructions": null,
+  "environmentIds": null,
+  "deploymentIds": null,
+  "lastFiredAt": "2026-10-21T04:00:00Z",
+  "nextFireAt": "2026-10-22T04:00:00Z",
+  "projectId": "prj_5m8n2p7q1r4s9t3u",
+  "agentId": "agt_7h2k9m4n1p6q3r8s",
+  "createdAt": "2026-04-01T10:00:00Z"
+}

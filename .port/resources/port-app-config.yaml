@@ -1,0 +1,149 @@
+createMissingRelatedEntities: false
+deleteDependentEntities: true
+resources:
+  # Workspaces first: every other kind relates to one. Then environments, so agents
+  # have something to relate to.
+  - kind: workspace
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: .id
+          title: .name
+          blueprint: '"stratonextWorkspace"'
+          properties:
+            organizationId: .organizationId
+            createdAt: .createdAt
+
+  - kind: environment
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: .id
+          title: .name
+          blueprint: '"stratonextEnvironment"'
+          properties:
+            status: .status
+            provider: .provider
+            classification: .classification
+            autoApproveUpTo: .autoApproveUpTo
+            allowAgentsToBeDeployed: .allowAgentsToBeDeployed
+            allowAgentsToAccess: .allowAgentsToAccess
+            createdAt: .createdAt
+          relations:
+            workspace: .workspaceId
+
+  - kind: agent
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: .id
+          title: .name
+          blueprint: '"stratonextAgent"'
+          properties:
+            role: .role
+            status: .status
+            health: .health
+            endpointUrl: .endpointUrl
+            createdAt: .createdAt
+          relations:
+            workspace: .workspaceId
+            environment: .environmentId
+
+  - kind: project
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: .id
+          title: .name
+          blueprint: '"stratonextProject"'
+          properties:
+            description: .description
+            status: .status
+            projectType: .type
+            summary: .summary
+            createdAt: .createdAt
+          relations:
+            workspace: .workspaceId
+
+  - kind: task
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: .id
+          title: .name
+          blueprint: '"stratonextTask"'
+          properties:
+            status: .status
+            summary: .summary
+            assigneeType: .assigneeType
+            verificationStatus: .verificationStatus
+            verificationCriteria: .verificationCriteria
+            verificationNotes: .verificationNotes
+            createdAt: .createdAt
+          relations:
+            workspace: .workspaceId
+            project: .projectId
+            # assigneeId may be a human user, and assigneeType is often null even
+            # when an agent is assigned: the id prefix is the reliable signal.
+            agent: if (.assigneeId // "") | startswith("agt_") then .assigneeId else null end
+
+  - kind: scheduledJob
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: .id
+          title: .name
+          blueprint: '"stratonextScheduledJob"'
+          properties:
+            description: .description
+            schedule: .schedule
+            timezone: .timezone
+            status: .status
+            # The jobs list query returns neither of these three yet: they stay
+            # null until the connection selection set catches up with job(id:).
+            instructions: .instructions
+            environmentIds: .environmentIds
+            deploymentIds: .deploymentIds
+            lastFiredAt: .lastFiredAt
+            nextFireAt: .nextFireAt
+            createdAt: .createdAt
+          relations:
+            workspace: .workspaceId
+            project: .projectId
+            agent: .agentId
+
+  - kind: report
+    selector:
+      query: "true"
+    port:
+      entity:
+        mappings:
+          identifier: .id
+          title: .title
+          blueprint: '"stratonextReport"'
+          properties:
+            type: .type
+            status: .status
+            summary: .summary
+            # ponytail: the reports list query carries no body: only get_report(id)
+            # does. Left null rather than an extra call per report; fan out in
+            # on_report_resync if the body turns out to matter in Port.
+            body: .body
+            createdBy: .createdBy
+            createdAt: .createdAt
+            updatedAt: .updatedAt
+          relations:
+            workspace: .workspaceId
+            projects: .projectIds

@@ -1,0 +1,10 @@
+{
+  "id": "prj_5m8n2p7q1r4s9t3u",
+  "name": "payments-api",
+  "description": "Payment processing service and its AWS stack",
+  "status": "ACTIVE",
+  "type": "SOFTWARE_APPLICATION",
+  "summary": "Lambda-based payments API behind API Gateway, deployed to prod-eu-west-1.",
+  "createdAt": "2026-03-10T08:30:00Z",
+  "workspaceId": "wks_0123456789abcde"
+}

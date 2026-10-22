@@ -1,0 +1,11 @@
+{
+  "id": "agt_7h2k9m4n1p6q3r8s",
+  "name": "sre-worker-01",
+  "role": "WORKER",
+  "status": "ENABLED",
+  "health": "READY",
+  "endpointUrl": "https://agents.example.com/agt_7h2k9m4n1p6q3r8s",
+  "workspaceId": "wks_0123456789abcde",
+  "environmentId": "env_3k9d2m1p7q4r8s6t",
+  "createdAt": "2026-03-05T11:02:47Z"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "env_3k9d2m1p7q4r8s6t",
+  "name": "prod-eu-west-1",
+  "status": "ACTIVE",
+  "provider": "AWS",
+  "classification": "PRODUCTION",
+  "autoApproveUpTo": "MEDIUM",
+  "allowAgentsToBeDeployed": true,
+  "allowAgentsToAccess": true,
+  "createdAt": "2026-03-02T09:14:31Z",
+  "workspaceId": "wks_0123456789abcde"
+}

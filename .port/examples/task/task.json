@@ -1,0 +1,13 @@
+{
+  "id": "tsk_9p3q6r1s4t7u2v5w",
+  "name": "Investigate elevated 5xx on payments-api",
+  "status": "WORKING",
+  "summary": "Correlating Lambda error spikes with the 14:00 deploy.",
+  "assigneeType": null,
+  "assigneeId": "agt_7h2k9m4n1p6q3r8s",
+  "projectId": "prj_5m8n2p7q1r4s9t3u",
+  "verificationStatus": "PENDING",
+  "verificationCriteria": "Root cause identified with log evidence; no production changes made.",
+  "verificationNotes": null,
+  "createdAt": "2026-10-20T14:22:05Z"
+}
