@@ -60,18 +60,7 @@ def fake_sdk(monkeypatch):
             ]
             return SimpleNamespace(workspaces=SimpleNamespace(nodes=nodes))
 
-        async def get_caller_identity():
-            return SimpleNamespace(
-                caller_identity=SimpleNamespace(id="agt_port", organization_id="org_1")
-            )
-
-        client = SimpleNamespace(
-            **{
-                method: fetch,
-                "get_workspaces": get_workspaces,
-                "get_caller_identity": get_caller_identity,
-            }
-        )
+        client = SimpleNamespace(**{method: fetch, "get_workspaces": get_workspaces})
         monkeypatch.setattr(main, "client_from_config", lambda: _resolved(client))
         return calls
 

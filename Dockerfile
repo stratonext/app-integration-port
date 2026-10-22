@@ -1,5 +1,5 @@
-# Build: docker build -t stratonext-port .
-# Run:   docker run --rm --env-file .env -p 8000:8000 stratonext-port
+# Build: finch build -t stratonext-port .
+# Run:   finch run --rm --env-file .env -p 8000:8000 stratonext-port
 FROM python:3.14-slim
 
 RUN pip install --no-cache-dir 'poetry>=2.0.0,<3.0.0'

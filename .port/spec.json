@@ -42,10 +42,10 @@
       "description": "StratoNext GraphQL endpoint, e.g. https://api.prod.stratonext.com/v1/graphql"
     },
     {
-      "name": "stratonextAuthDomain",
-      "type": "string",
+      "name": "stratonextAuthTokenUrl",
+      "type": "url",
       "required": true,
-      "description": "Auth domain of the StratoNext machine identity, e.g. api.prod.stratonext.com/oauth2/agent-token"
+      "description": "Full token URL of the StratoNext machine identity, e.g. https://api.gamma.stratonext.com/oauth2/agent-token"
     },
     {
       "name": "stratonextAuthClientId",

@@ -20,7 +20,7 @@ _cached_m2m: tuple[str, float] | None = None
 async def _client_credentials_token() -> str:
     """Cognito machine-to-machine token, cached until just before it expires.
 
-    A form-encoded POST to {domain}/oauth2/token with HTTP Basic auth. No
+    A form-encoded POST to the configured token URL with HTTP Basic auth. No
     `audience`/`scope` params: a client_credentials grant issues the scopes fixed
     on the app client and Cognito's token endpoint rejects them.
     """
@@ -29,8 +29,7 @@ async def _client_credentials_token() -> str:
         return _cached_m2m[0]
 
     config = ocean.integration_config
-    domain = config["stratonext_auth_domain"]
-    domain = domain.removeprefix("https://").removeprefix("http://").rstrip("/")
+    token_url = config["stratonext_auth_token_url"]
     basic = base64.b64encode(
         f"{config['stratonext_auth_client_id']}:"
         f"{config['stratonext_auth_client_secret']}".encode()
@@ -38,7 +37,7 @@ async def _client_credentials_token() -> str:
 
     async with httpx.AsyncClient(timeout=30.0) as http:
         resp = await http.post(
-            f"https://{domain}/oauth2/token",
+            token_url,
             data={"grant_type": "client_credentials"},
             headers={
                 "Authorization": f"Basic {basic}",
@@ -65,7 +64,7 @@ async def _token() -> str:
     if ocean.integration_config.get("stratonext_auth_client_id"):
         return await _client_credentials_token()
     raise RuntimeError(
-        "No StratoNext credentials: set stratonextAuthDomain, stratonextAuthClientId "
+        "No StratoNext credentials: set stratonextAuthTokenUrl, stratonextAuthClientId "
         "and stratonextAuthClientSecret on the integration "
         "(OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_* in .env)."
     )

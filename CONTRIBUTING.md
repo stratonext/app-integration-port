@@ -20,7 +20,7 @@ make lint/fix            # black and ruff --fix
 runs the same targets. Add a dependency with `poetry add <name>` (or `poetry add --group dev`)
 so `poetry.lock` moves with `pyproject.toml`.
 
-StratoNext auth is the Cognito machine identity only: `stratonextAuthDomain`,
+StratoNext auth is the Cognito machine identity only: `stratonextAuthTokenUrl`,
 `stratonextAuthClientId` and `stratonextAuthClientSecret`, declared as integration
 configuration in `.port/spec.json` so Port's install form collects them. In `.env` they are
 the `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_*` variables. There is no fixed-token path
@@ -63,7 +63,7 @@ tunnel.
 | `client.py` | Auth (fixed token or Cognito machine identity), `stratonext-sdk` wrapper, Relay paginator |
 | `actions.py` | The `/integration/tasks/*` routes and the transport-agnostic `create_task` / `dispatch_task` / `cancel_task` |
 | `push_mapping.py` | Push `port-app-config.yaml` to Port after editing it |
-| `port-workflows.json` | The five Port workflow definitions |
+| `port-workflows.json` | The three Port workflow definitions |
 | `.port/spec.json` | Integration metadata and config schema |
 | `.port/resources/blueprints.json` | Blueprints Ocean creates on first run |
 | `.port/resources/port-app-config.yaml` | Raw StratoNext JSON → Port entity, as JQ |
@@ -109,7 +109,7 @@ Two Ocean behaviours make this less obvious than it looks:
   ```bash
   poetry run python push_mapping.py     # PATCHes the mapping onto the integration in Port
   ```
-  Equivalent to editing it by hand on the integration's **Data sources** page.
+  Equivalent to editing it by hand on the connector's page under **Context Lake → Connectors**.
 
 ### Dispatch
 
@@ -158,9 +158,8 @@ nodes. Node order in the array is execution order; nodes pass data by template, 
 list: `stratonext_create_then_dispatch`'s second node reads
 `{{ .outputs.create.response.data.taskId }}`.
 
-`stratonext_investigate_service` carries `contexts: [{on: ENTITY, userInput: "project"}]`,
-so it appears as a button on the `stratonextProject` entity page with the project prefilled;
-its `project` and `deploymentId` inputs are hidden.
+No input carries a `default`: agent, project and deployment ids are tenant-specific, so
+the form asks for them every time.
 
 Project, Agent and Environment inputs are `format: entity` pickers, so they only populate
 once the export has run at least once.

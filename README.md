@@ -13,77 +13,134 @@ agents to work.
 Developers: see [CONTRIBUTING.md](CONTRIBUTING.md) for running from source, tests, and how
 the pieces fit.
 
-## 1. Run the container
+## Setup
+
+Three places to touch, in this order: Port, StratoNext, then the container. Ten minutes.
+
+### 1. Register the connector in Port
+
+1. In the Port app go to **Context Lake → Connectors → New connectors** and pick
+   **Custom Ocean integration**.
+2. Choose the **Self-hosted** install. Port shows a `docker run` / `helm` command with your
+   organization's credentials filled in. Copy three values out of it, nothing else:
+   - `OCEAN__PORT__CLIENT_ID`
+   - `OCEAN__PORT__CLIENT_SECRET`
+   - `OCEAN__PORT__BASE_URL` (`https://api.port.io` for EU, `https://api.us.port.io` for US)
+
+   Do not run the command as shown: it pulls Port's generic no-code image. This
+   integration ships its own image (step 3) and registers itself on first run under the
+   identifier **`stratonext`**. Keep that name: the connector, its data mapping and the
+   `create_task` / `dispatch_task` / `cancel_task` actions are all registered under it, and
+   the workflows and `push_mapping.py` target it. Another name creates a second, empty
+   connector in Port. The same credentials are also under **Settings → Credentials**.
+
+That is all Port needs for the export. Blueprints and the data mapping are created by the
+container on its first run.
+
+### 2. Enable the integration in StratoNext
+
+Integrations in StratoNext are enabled per workspace, and the container syncs exactly the
+workspaces that enabled Port. Visibility is enablement: the machine identity can see a
+workspace only while Port is enabled there.
+
+1. An organization admin creates the **Port** machine identity once. It yields the three
+   `STRATONEXT_AUTH_*` values used in step 3: token URL, client ID, client secret.
+2. Each workspace admin enables **Port** under their workspace's integrations.
+
+A workspace enabled later is picked up on the next resync (every 60 minutes by default) or
+on restart. Disabling Port in a workspace removes that workspace's entities from Port on the
+next resync. The container logs, at startup, which workspaces it can see.
+
+### 3. Run the container
 
 ```bash
 cp .env.example .env     # fill it in, see below
-docker compose up --build
+finch compose up --build
 ```
 
 Or without compose:
 
 ```bash
-docker build -t stratonext-port .
-docker run --rm --env-file .env -p 8000:8000 stratonext-port
+finch build -t stratonext-port .
+finch run --rm --env-file .env -p 8000:8000 stratonext-port
 ```
 
-The container listens on `:8000`, resyncs the catalog on a schedule, and serves the
-dispatch endpoints. Port must be able to reach that URL for dispatch to work, so put it
-behind your usual ingress (on a laptop, `ngrok http 8000`).
-
-### Configuration
+(`docker` works the same way if that is what you have.) The container listens on `:8000`,
+resyncs the catalog on a schedule, and serves the dispatch endpoints. This is enough for
+the export; see [Going live](#6-going-live) for the webhook dispatch.
 
 Everything is set in `.env`. Required:
 
 | Variable | What |
 |---|---|
-| `OCEAN__PORT__CLIENT_ID` / `OCEAN__PORT__CLIENT_SECRET` | Port app → **Settings → Credentials** |
-| `OCEAN__PORT__BASE_URL` | `https://api.us.port.io` (US) or `https://api.port.io` (EU) |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_API_URL` | StratoNext GraphQL endpoint |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_DOMAIN` | Cognito domain of the StratoNext machine identity |
+| `OCEAN__PORT__CLIENT_ID` / `OCEAN__PORT__CLIENT_SECRET` | From step 1 |
+| `OCEAN__PORT__BASE_URL` | From step 1: `https://api.port.io` (EU) or `https://api.us.port.io` (US) |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_API_URL` | StratoNext GraphQL endpoint, e.g. `https://api.prod.stratonext.com/v1/graphql` |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_TOKEN_URL` | Token URL of the machine identity from step 2, e.g. `https://api.prod.stratonext.com/oauth2/agent-token` |
 | `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_ID` | Client ID of the machine identity |
 | `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_SECRET` | Client secret of the machine identity |
-| `OCEAN__INTEGRATION__CONFIG__PORT_WEBHOOK_SECRET` | Shared secret for the webhook dispatch endpoints. **Unset, every webhook request is refused.** Not needed for the native actions. |
+| `OCEAN__INTEGRATION__CONFIG__PORT_WEBHOOK_SECRET` | A secret **you choose** (e.g. `openssl rand -hex 32`): nobody issues it. The container checks it on every webhook dispatch call, and you paste the same value into Port in step 5. **Unset, every webhook request is refused.** Not needed for the native actions. |
 
 Optional:
 
 | Variable | Default | What |
 |---|---|---|
 | `OCEAN__SCHEDULED_RESYNC_INTERVAL` | `60` | Minutes between full catalog resyncs. |
-| `OCEAN__INTEGRATION__IDENTIFIER` | `stratonext-demo` | Name of the integration in Port. |
+| `OCEAN__INTEGRATION__IDENTIFIER` | `stratonext` | Name of the connector in Port. **Leave it as `stratonext`** (see step 1). |
 
-## 2. Enable workspaces in StratoNext
+### 4. Check it worked
 
-Integrations in StratoNext are enabled per workspace, and the container syncs exactly the
-workspaces that enabled Port. Visibility is enablement: the integration identity in `.env`
-can see a workspace only while Port is enabled there.
+- **Context Lake → Connectors** lists `stratonext` with its sync status and event log. The
+  first resync runs at startup; wait for it to complete.
+- **Catalog** shows the seven blueprints below, with one `stratonextWorkspace` entity per
+  enabled workspace. An empty catalog with a healthy connector means no workspace has
+  enabled Port yet: the container log says so at startup.
+- The data mapping is editable on the connector's page in Port. Port owns it from then on;
+  the YAML in this repo only seeds the first run.
+- **Connector present but no blueprints**, and the Port log reports failed entities: the
+  first run was interrupted after it registered the connector (a network timeout does it).
+  Ocean creates blueprints only together with the connector, so a restart will not add them.
+  Delete the connector under **Context Lake → Connectors**, restart the container, and it
+  creates everything again. If that first resync then logs `Integration not found` from
+  Port's ingest host, Port's ingest side has not caught up with the recreated connector
+  yet: trigger a resync from the connector's page a few minutes later.
 
-1. An organization admin creates the Port integration identity once, and puts its three
-   values in `.env` (the `STRATONEXT_AUTH_*` variables above).
-2. Each workspace admin enables **Port** in their workspace's integrations.
-3. The container picks the workspace up on its next resync (every 60 minutes by default) or
-   on restart. Nothing to configure on the container.
+### 5. Dispatch tasks from Port (optional)
 
-Disabling Port in a workspace removes that workspace's entities from Port on the next
-resync. The container logs, at startup, which workspaces it can see.
+Needed only for the self-service forms. The export works without it. Pick one of the two
+paths in [Dispatching tasks from Port](#dispatching-tasks-from-port). For the webhook
+fallback:
 
-## 3. Connect Port
-
-The first run creates the seven blueprints and the data mapping in Port automatically, and
-the integration appears under **Data sources**. The export needs nothing more: it covers
-every workspace that enabled it.
-
-Dispatching tasks from Port needs one of the two paths described in
-[Dispatching tasks from Port](#dispatching-tasks-from-port). For the webhook fallback, in Port:
-
-1. Under **Settings → Secrets**, add two secrets:
+1. Pick a secret yourself, any long random string, and set it as
+   `OCEAN__INTEGRATION__CONFIG__PORT_WEBHOOK_SECRET` in `.env`. Neither Port nor StratoNext
+   generates it: it is a value only you and the container know, and Port sends it back on
+   every dispatch call so the container can tell your workflows from anyone else on the
+   internet.
+2. In Port, under **Settings → Secrets**, add two secrets:
    - `STRATONEXT_INTEGRATION_URL`: the container's public base URL, no trailing slash
-   - `STRATONEXT_WEBHOOK_SECRET`: the same value as `PORT_WEBHOOK_SECRET` in `.env`
-2. Import the workflows from `port-workflows.json`: paste each one into Port's workflow
+   - `STRATONEXT_WEBHOOK_SECRET`: the exact same value you put in `.env`
+3. Import the workflows from `port-workflows.json`: paste each one into Port's workflow
    JSON editor, or POST it to `/v1/workflows`.
 
 After the first resync the Project, Agent and Environment inputs on the forms become
 dropdowns of real StratoNext resources.
+
+### 6. Going live
+
+A laptop is fine for the first sync. For real use the container needs to run all the time
+and, for the webhook dispatch, be reachable from Port:
+
+- **Host it as a long-running service** (ECS, Kubernetes, a VM): one replica, the same
+  `.env` values as secrets, port `8000` exposed. Keep `OCEAN__INTEGRATION__IDENTIFIER`
+  at `stratonext`: a redeploy under the same name picks up the existing connector, mapping
+  and blueprints in Port; a new name starts a second connector from scratch.
+- **Give it a public HTTPS address.** Port calls `/integration/tasks/*` on it for the
+  webhook workflows, so put the container behind your usual ingress or load balancer and
+  set that URL as `STRATONEXT_INTEGRATION_URL` in Port (step 5). On a laptop,
+  `ngrok http 8000` does for a demo. The export itself never needs inbound access: the
+  container only calls out to Port and StratoNext.
+- **Set `PORT_WEBHOOK_SECRET`** before exposing it. Without it every dispatch request is
+  refused, which is the safe default, but also means the forms do nothing.
 
 ## What you get in the catalog
 
@@ -109,24 +166,22 @@ directly, Port authenticates the run itself, and no secrets or workflow import a
 This is the path once the integration is installed from Port's catalog. Until Port lists
 it, Port rejects `stratonext` as an integration provider, which is why the fallback exists.
 
-**Webhook fallback.** `port-workflows.json` ships five ready-to-use workflows whose nodes
+**Webhook fallback.** `port-workflows.json` ships three ready-to-use workflows whose nodes
 call the integration's `/integration/tasks/*` endpoints with the shared secret from
-`PORT_WEBHOOK_SECRET`. Set it up as described in [Connect Port](#3-connect-port).
+`PORT_WEBHOOK_SECRET`. Set it up as described in step 5 of [Setup](#setup).
 
 General purpose:
 
 | Workflow | What |
 |---|---|
-| `stratonext_dispatch_task` | Create and dispatch a task in one step. Asks for name, description, optional instructions, workspace, project and agent. The workspace is optional when a project is chosen. |
-| `stratonext_create_then_dispatch` | Same inputs, split in two steps so an approval node can gate the dispatch. |
+| `stratonext_create_then_dispatch` | Create a task, then dispatch it, in two steps so an approval node can gate the dispatch. Asks for name, description, optional instructions, workspace, project and agent. The workspace is optional when a project is chosen. |
 | `stratonext_cancel_task` | Cancel a queued or running task. |
 
-Showcases, where the task content is fixed and the form only exposes a few knobs:
+Showcase, where the task content is fixed and the form only exposes a few knobs:
 
 | Workflow | What |
 |---|---|
 | `stratonext_aws_cost_report` | Read-only AWS cost report for one environment, broken down by service and compared against the preceding period. Inputs: environment, lookback days, granularity, agent. |
-| `stratonext_investigate_service` | SRE triage of a service's Lambda metrics and logs. Appears as a button on each `stratonextProject` entity page with the project prefilled. Inputs: lookback hours, agent. |
 
 All dispatches are fire-and-forget: the workflow completes as soon as StratoNext accepts
 the task, not when the agent finishes. Follow progress on the task in StratoNext or, after

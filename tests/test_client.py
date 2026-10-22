@@ -71,7 +71,7 @@ async def check_token_cache() -> None:
 
     fake_ocean = SimpleNamespace(
         integration_config={
-            "stratonext_auth_domain": "https://auth.example.com/",
+            "stratonext_auth_token_url": "https://auth.example.com/oauth2/agent-token",
             "stratonext_auth_client_id": "cid",
             "stratonext_auth_client_secret": "secret",
         }

@@ -27,11 +27,14 @@ async def on_start() -> None:
     (nothing enabled yet), so this warns instead of raising.
     """
     client = await client_from_config()
-    who = (await client.get_caller_identity()).caller_identity
+    # ponytail: no callerIdentity call: the SDK's model rejects the machine identity's
+    # kind (APP, not AGENT/USER) and the config already says who we are. Reinstate once
+    # stratonext-sdk knows APP.
+    who = ocean.integration_config["stratonext_auth_client_id"]
     visible = await workspaces(client)
     logger.info(
-        f"StratoNext identity {who.id} in organization {who.organization_id} sees "
-        f"{len(visible)} workspace(s): {', '.join(w['name'] for w in visible) or 'none'}"
+        f"StratoNext client {who} sees {len(visible)} workspace(s): "
+        f"{', '.join(w['name'] for w in visible) or 'none'}"
     )
     if not visible:
         logger.warning(

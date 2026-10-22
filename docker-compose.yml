@@ -1,6 +1,6 @@
-# Local dev only: `docker compose up --build`.
+# Local dev only: `finch compose up --build`.
 # ponytail: thin wrapper around
-#   docker run --rm --env-file .env -p 8000:8000 stratonext-port
+#   finch run --rm --env-file .env -p 8000:8000 stratonext-port
 # Copy .env.example to .env first.
 services:
   integration:

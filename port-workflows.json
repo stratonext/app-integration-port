@@ -1,109 +1,5 @@
 [
   {
-    "identifier": "stratonext_dispatch_task",
-    "title": "Dispatch a StratoNext task",
-    "icon": "Package",
-    "description": "Creates a StratoNext task and dispatches it to an agent in a single call. Asks for a task name, a description of the goal and optional free-form instructions, plus an optional project to file it under and an agent to assign it to.",
-    "nodes": [
-      {
-        "identifier": "trigger",
-        "config": {
-          "type": "SELF_SERVE_TRIGGER",
-          "published": true,
-          "userInputs": {
-            "properties": {
-              "name": {
-                "type": "string",
-                "title": "Task name",
-                "description": "Short name for the task, shown in StratoNext and in the Port catalog.",
-                "visible": true
-              },
-              "description": {
-                "type": "string",
-                "title": "Description",
-                "description": "What the agent should achieve. Give it enough context to know what done looks like.",
-                "visible": true
-              },
-              "instructions": {
-                "type": "string",
-                "title": "Instructions",
-                "description": "Optional step-by-step instructions for the agent. Leave empty to let it plan its own approach.",
-                "visible": true
-              },
-              "project": {
-                "type": "string",
-                "title": "Project",
-                "description": "Optional StratoNext project to file the task under.",
-                "visible": true,
-                "format": "entity",
-                "blueprint": "stratonextProject"
-              },
-              "agent": {
-                "type": "string",
-                "title": "Agent",
-                "description": "Optional StratoNext agent to assign the task to. Leave empty to omit the assignee.",
-                "visible": true,
-                "format": "entity",
-                "blueprint": "stratonextAgent"
-              },
-              "workspace": {
-                "type": "string",
-                "title": "Workspace",
-                "description": "StratoNext workspace to create the task in. Optional when a project is chosen: the project's workspace is used.",
-                "visible": true,
-                "format": "entity",
-                "blueprint": "stratonextWorkspace"
-              }
-            },
-            "required": [
-              "name",
-              "description"
-            ],
-            "order": [
-              "name",
-              "description",
-              "instructions",
-              "workspace",
-              "project",
-              "agent"
-            ]
-          }
-        }
-      },
-      {
-        "identifier": "dispatch",
-        "config": {
-          "type": "WEBHOOK",
-          "url": "{{ .secrets[\"STRATONEXT_INTEGRATION_URL\"] }}/integration/tasks/dispatch",
-          "method": "POST",
-          "agent": false,
-          "synchronized": true,
-          "headers": {
-            "Content-Type": "application/json",
-            "X-StratoNext-Secret": "{{ .secrets[\"STRATONEXT_WEBHOOK_SECRET\"] }}"
-          },
-          "body": {
-            "name": "{{ .outputs.trigger.name }}",
-            "description": "{{ .outputs.trigger.description }}",
-            "instructions": "{{ .outputs.trigger.instructions }}",
-            "workspaceId": "{{ .outputs.trigger.workspace | if type == \"object\" then .identifier else . end }}",
-            "projectId": "{{ .outputs.trigger.project | if type == \"object\" then .identifier else . end }}",
-            "assigneeId": "{{ .outputs.trigger.agent | if type == \"object\" then .identifier else . end }}",
-            "idempotencyKey": "{{ .workflowRun.identifier }}"
-          },
-          "onTimeout": "fail",
-          "onFailure": "terminate"
-        }
-      }
-    ],
-    "connections": [
-      {
-        "sourceIdentifier": "trigger",
-        "targetIdentifier": "dispatch"
-      }
-    ]
-  },
-  {
     "identifier": "stratonext_create_then_dispatch",
     "title": "Create, then dispatch a StratoNext task",
     "icon": "Package",
@@ -316,8 +212,7 @@
                   7,
                   30,
                   90
-                ],
-                "default": 30
+                ]
               },
               "granularity": {
                 "type": "string",
@@ -327,17 +222,15 @@
                 "enum": [
                   "DAILY",
                   "MONTHLY"
-                ],
-                "default": "DAILY"
+                ]
               },
               "agent": {
                 "type": "string",
                 "title": "Agent",
-                "description": "StratoNext agent that runs the report. Prefilled with a default agent: change it to route the task elsewhere.",
+                "description": "StratoNext agent that runs the report.",
                 "visible": true,
                 "format": "entity",
-                "blueprint": "stratonextAgent",
-                "default": "agt_dobam83day9l1ve"
+                "blueprint": "stratonextAgent"
               }
             },
             "required": [
@@ -373,111 +266,6 @@
             "instructions": "Produce an AWS cost report for the target environment.\n\n1. Resolve the environment from the task's environmentIds and assume its AgentOperationsRoleArn (with AgentOperationsExternalId if present) before any AWS call.\n2. Query Cost Explorer (ce:GetCostAndUsage) for the last {{ .outputs.trigger.lookbackDays }} days at {{ .outputs.trigger.granularity }} granularity, grouped by SERVICE, using UnblendedCost.\n3. Report:\n   - total spend for the period, and the same figure for the preceding period\n   - the top 5 services by spend, each with its share of the total\n   - any service whose spend moved more than 25% against the preceding period\n   - untagged or unattributed spend, if any\n4. Call out anything that looks anomalous, with the evidence you based it on. Do not speculate beyond what the data shows.\n5. Post the report as the task result, as markdown with a table for the per-service breakdown.\n\nThis is a read-only task. Do not create, modify, or delete any AWS resource. If a required permission is missing, stop and request approval rather than working around it.",
             "verificationCriteria": "The task result contains a per-service AWS cost breakdown for the requested period, a period total compared against the preceding period, and the top 5 services by spend.",
             "environmentId": "{{ .outputs.trigger.environment | if type == \"object\" then .identifier else . end }}",
-            "assigneeId": "{{ .outputs.trigger.agent | if type == \"object\" then .identifier else . end }}",
-            "idempotencyKey": "{{ .workflowRun.identifier }}"
-          },
-          "onTimeout": "fail",
-          "onFailure": "terminate"
-        }
-      }
-    ],
-    "connections": [
-      {
-        "sourceIdentifier": "trigger",
-        "targetIdentifier": "dispatch"
-      }
-    ]
-  },
-  {
-    "identifier": "stratonext_investigate_service",
-    "title": "Investigate this service",
-    "icon": "Package",
-    "description": "Puts a StratoNext agent on call for one service: it reads the deployment's Lambda metrics and logs read-only and reports error rates, timeouts, throttles and latency, with the log evidence behind each finding. Appears as a button on a StratoNext Project entity page: the project and its deployment are prefilled and hidden, leaving only the lookback window and the agent to choose.",
-    "nodes": [
-      {
-        "identifier": "trigger",
-        "config": {
-          "type": "SELF_SERVE_TRIGGER",
-          "published": true,
-          "contexts": [
-            {
-              "on": "ENTITY",
-              "userInput": "project"
-            }
-          ],
-          "userInputs": {
-            "properties": {
-              "project": {
-                "type": "string",
-                "title": "Service",
-                "description": "StratoNext project being investigated. Prefilled from the entity page the button was opened on, so it is hidden on the form.",
-                "visible": false,
-                "format": "entity",
-                "blueprint": "stratonextProject",
-                "default": "prj_h0neh33zfhl2xwo"
-              },
-              "deploymentId": {
-                "type": "string",
-                "title": "Deployment",
-                "description": "Deployment the agent investigates: it carries the stack, region and operations role the agent needs. Prefilled, so it is hidden on the form.",
-                "visible": false,
-                "default": "dpl_owxmier8ymtjcbl"
-              },
-              "lookbackHours": {
-                "type": "number",
-                "title": "Look back (hours)",
-                "description": "How far back the agent reads CloudWatch metrics and logs.",
-                "visible": true,
-                "enum": [
-                  1,
-                  6,
-                  24,
-                  72
-                ],
-                "default": 24
-              },
-              "agent": {
-                "type": "string",
-                "title": "Agent",
-                "description": "StratoNext agent that runs the investigation. Prefilled with a default agent: change it to route the task elsewhere.",
-                "visible": true,
-                "format": "entity",
-                "blueprint": "stratonextAgent",
-                "default": "agt_dobam83day9l1ve"
-              }
-            },
-            "required": [
-              "project",
-              "deploymentId",
-              "lookbackHours",
-              "agent"
-            ],
-            "order": [
-              "lookbackHours",
-              "agent"
-            ]
-          }
-        }
-      },
-      {
-        "identifier": "dispatch",
-        "config": {
-          "type": "WEBHOOK",
-          "url": "{{ .secrets[\"STRATONEXT_INTEGRATION_URL\"] }}/integration/tasks/dispatch",
-          "method": "POST",
-          "agent": false,
-          "synchronized": true,
-          "headers": {
-            "Content-Type": "application/json",
-            "X-StratoNext-Secret": "{{ .secrets[\"STRATONEXT_WEBHOOK_SECRET\"] }}"
-          },
-          "body": {
-            "name": "SRE investigation: last {{ .outputs.trigger.lookbackHours }}h of Lambda logs",
-            "description": "Investigate this service's Lambda functions: error rates, timeouts, throttles and latency over the requested window, with the log evidence behind each finding.",
-            "instructions": "You are on call for this service. Investigate its recent behaviour and report what you find.\n\n1. Resolve the task's deployment: read its graph, config.region and config.stackNames, then assume the environment's AgentOperationsRoleArn (with AgentOperationsExternalId if present) before any AWS call.\n2. Enumerate the Lambda functions belonging to the deployment's CloudFormation stack(s).\n3. For each function, over the last {{ .outputs.trigger.lookbackHours }} hours, gather:\n   - CloudWatch metrics: Invocations, Errors, Throttles, Duration (p50/p95/max)\n   - CloudWatch Logs: ERROR entries, 'Task timed out', out-of-memory, and unhandled exceptions. Sample up to 10 distinct messages with timestamps and request ids.\n   - cold starts (INIT_REPORT / Init Duration), if material\n4. Correlate error spikes against recent stack updates, configuration changes, or traffic shifts. State what you compared, not just the conclusion.\n5. Report as markdown: a per-function table (invocations, errors, error rate, p95 duration), then findings ranked by severity: each with the log evidence backing it: then recommended next steps.\n6. If nothing is wrong, say so plainly and show the numbers that support it. Do not manufacture findings.\n\nThis is a read-only investigation. Do not modify any AWS resource, Lambda configuration, or log group. If a required permission is missing, stop and request approval rather than working around it.",
-            "verificationCriteria": "The result contains a per-Lambda table of invocations, errors and p95 duration for the requested window, plus either concrete findings each backed by log evidence, or an explicit all-clear backed by those same numbers.",
-            "projectId": "{{ .outputs.trigger.project | if type == \"object\" then .identifier else . end }}",
-            "deploymentId": "{{ .outputs.trigger.deploymentId }}",
             "assigneeId": "{{ .outputs.trigger.agent | if type == \"object\" then .identifier else . end }}",
             "idempotencyKey": "{{ .workflowRun.identifier }}"
           },
