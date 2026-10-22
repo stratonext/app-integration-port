@@ -10,6 +10,8 @@ agents to work.
 - **Dispatch**: a self-service form in Port creates, dispatches or cancels a StratoNext
   task, so a button in Port turns into an agent doing real work.
 
+![StratoNext workflows in Port: investigate a service failure with an AI SRE, create then dispatch a task, create an AWS cost report](docs/port-workflows.png)
+
 Developers: see [CONTRIBUTING.md](CONTRIBUTING.md) for running from source, tests, and how
 the pieces fit.
 
