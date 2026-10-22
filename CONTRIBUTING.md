@@ -20,7 +20,7 @@ make lint/fix            # black and ruff --fix
 runs the same targets. Add a dependency with `poetry add <name>` (or `poetry add --group dev`)
 so `poetry.lock` moves with `pyproject.toml`.
 
-StratoNext auth is the Cognito machine identity only: `stratonextAuthTokenUrl`,
+StratoNext auth is the Cognito app identity only: `stratonextAuthTokenUrl`,
 `stratonextAuthClientId` and `stratonextAuthClientSecret`, declared as integration
 configuration in `.port/spec.json` so Port's install form collects them. In `.env` they are
 the `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_*` variables. There is no fixed-token path
@@ -60,7 +60,7 @@ tunnel.
 | File | Does |
 |---|---|
 | `main.py` | One `@ocean.on_resync` handler per kind (six) |
-| `client.py` | Auth (fixed token or Cognito machine identity), `stratonext-sdk` wrapper, Relay paginator |
+| `client.py` | Auth (fixed token or Cognito app identity), `stratonext-sdk` wrapper, Relay paginator |
 | `actions.py` | The `/integration/tasks/*` routes and the transport-agnostic `create_task` / `dispatch_task` / `cancel_task` |
 | `push_mapping.py` | Push `port-app-config.yaml` to Port after editing it |
 | `port-workflows.json` | The three Port workflow definitions |

@@ -20,7 +20,7 @@ checklist live in [CONTRIBUTING.md](CONTRIBUTING.md); user-facing docs in [READM
   change, no scaffolding "for later". Reuse what is already in the repo before writing new.
 - Mark deliberate shortcuts with a `ponytail:` comment naming the ceiling and the upgrade
   path. The existing ones are the pattern.
-- Auth is the Cognito machine identity only: the `stratonextAuth*` settings declared in
+- Auth is the Cognito app identity only: the `stratonextAuth*` settings declared in
   `.port/spec.json` (`OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_*` in `.env`). Do not add
   fixed tokens, CLI credential fallbacks or other auth paths.
 - The `/integration/tasks/*` routes are reachable from the internet. They must keep failing

@@ -42,10 +42,10 @@ container on its first run.
 ### 2. Enable the integration in StratoNext
 
 Integrations in StratoNext are enabled per workspace, and the container syncs exactly the
-workspaces that enabled Port. Visibility is enablement: the machine identity can see a
+workspaces that enabled Port. Visibility is enablement: the app identity can see a
 workspace only while Port is enabled there.
 
-1. An organization admin creates the **Port** machine identity once. It yields the three
+1. An organization admin creates the **Port** app identity once, at organization level. It yields the three
    `STRATONEXT_AUTH_*` values used in step 3: token URL, client ID, client secret.
 2. Each workspace admin enables **Port** under their workspace's integrations.
 
@@ -78,9 +78,9 @@ Everything is set in `.env`. Required:
 | `OCEAN__PORT__CLIENT_ID` / `OCEAN__PORT__CLIENT_SECRET` | From step 1 |
 | `OCEAN__PORT__BASE_URL` | From step 1: `https://api.port.io` (EU) or `https://api.us.port.io` (US) |
 | `OCEAN__INTEGRATION__CONFIG__STRATONEXT_API_URL` | StratoNext GraphQL endpoint, e.g. `https://api.prod.stratonext.com/v1/graphql` |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_TOKEN_URL` | Token URL of the machine identity from step 2, e.g. `https://api.prod.stratonext.com/oauth2/agent-token` |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_ID` | Client ID of the machine identity |
-| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_SECRET` | Client secret of the machine identity |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_TOKEN_URL` | Token URL of the app identity from step 2, e.g. `https://api.prod.stratonext.com/oauth2/agent-token` |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_ID` | Client ID of the app identity |
+| `OCEAN__INTEGRATION__CONFIG__STRATONEXT_AUTH_CLIENT_SECRET` | Client secret of the app identity |
 | `OCEAN__INTEGRATION__CONFIG__PORT_WEBHOOK_SECRET` | A secret **you choose** (e.g. `openssl rand -hex 32`): nobody issues it. The container checks it on every webhook dispatch call, and you paste the same value into Port in step 5. **Unset, every webhook request is refused.** Not needed for the native actions. |
 
 Optional:

@@ -45,21 +45,21 @@
       "name": "stratonextAuthTokenUrl",
       "type": "url",
       "required": true,
-      "description": "Full token URL of the StratoNext machine identity, e.g. https://api.gamma.stratonext.com/oauth2/agent-token"
+      "description": "Full token URL of the StratoNext app identity, e.g. https://api.gamma.stratonext.com/oauth2/agent-token"
     },
     {
       "name": "stratonextAuthClientId",
       "type": "string",
       "required": true,
       "sensitive": true,
-      "description": "Client id of the StratoNext machine identity"
+      "description": "Client id of the StratoNext app identity"
     },
     {
       "name": "stratonextAuthClientSecret",
       "type": "string",
       "required": true,
       "sensitive": true,
-      "description": "Client secret of the StratoNext machine identity"
+      "description": "Client secret of the StratoNext app identity"
     },
     {
       "name": "portWebhookSecret",

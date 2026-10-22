@@ -18,7 +18,7 @@ _cached_m2m: tuple[str, float] | None = None
 
 
 async def _client_credentials_token() -> str:
-    """Cognito machine-to-machine token, cached until just before it expires.
+    """Cognito app identity token (client credentials), cached until just before it expires.
 
     A form-encoded POST to the configured token URL with HTTP Basic auth. No
     `audience`/`scope` params: a client_credentials grant issues the scopes fixed
@@ -54,7 +54,7 @@ async def _client_credentials_token() -> str:
 
 
 async def _token() -> str:
-    """Bearer token for the StratoNext API, from the machine identity.
+    """Bearer token for the StratoNext API, from the app identity.
 
     The three values are integration configuration declared in .port/spec.json, so
     Port's install form collects them like any other setting. There is no fallback
@@ -102,7 +102,7 @@ async def paginate(
 
 
 async def workspaces(client: Client) -> list[dict[str, Any]]:
-    """Every workspace the machine identity can see: the whole organization, in practice.
+    """Every workspace the app identity can see: the whole organization, in practice.
 
     One container syncs them all; there is no per-workspace configuration.
     """
