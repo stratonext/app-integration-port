@@ -55,8 +55,8 @@ while Port is enabled there.
 Nothing is visible to Port until at least one workspace has it on. A workspace switched on
 later is picked up on the next resync (every 60 minutes by default) or on restart. Switching
 Port off in a workspace removes that workspace's entities from Port on the next resync;
-switching it off for the organization stops the integration everywhere but keeps the
-workspace settings. The container logs, at startup, which workspaces it can see.
+switching it off for the organization stops the integration everywhere. The container logs,
+at startup, which workspaces it can see.
 
 ### 3. Run the container
 
